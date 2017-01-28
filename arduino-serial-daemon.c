@@ -1,100 +1,115 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <syslog.h>
-#include <time.h>
-#include <string.h>
-#include "arduino-serial-lib-daemon.h"
-#include <mysql/mysql.h>
-
-using namespace std;
+#include "header.h"
+#include "config.h"
+#include "webchild.h"
 
 #define DAEMON_NAME "arduino-serial-daemon"
+#define LISTENQ 5
+#define MAXLINE 3000
+
 
 const int buf_max = 32;
-char buf[buf_max];
+char buf[32];
+
+void sig_chld(int signo) {
+    pid_t pid;
+    int stat;
+    char line[MAXLINE];
+
+    while ((pid = waitpid(-1, &stat, WNOHANG)) > 0) {
+        sprintf(line, "child %d terminated", pid);
+        syslog(LOG_INFO, line);
+    }
+    return;
+}
 void process(){
-
-  FILE *fp;
-  const int buf_string_max = 256;
-  int fd = -1;
-  char db_buf[buf_string_max], buf_db[buf_string_max];
-  const char delimiters[] = "C F#%";
-  char *token1, *token2, *cp, buff_time[50];
-  struct tm *sTm;
-  sscanf(buf, "%s", buf_db);
-  token1 = strtok (buf_db, delimiters);
-  token2 = strtok (NULL, delimiters);
-
-  MYSQL *conn;
-  const char *server = "localhost";
-  const char *user = "test";
-  const char *password = "test";
-  const char *database = "pihome";
-
-/* End Variables */
-
-  conn = mysql_init(NULL);
-    if (!mysql_real_connect(conn, server, user, password, database, 0, NULL, 0)) {
-      syslog(LOG_ERR, "%s", mysql_error(conn));
-      exit(EXIT_FAILURE);}
-    sprintf(db_buf, "update pi_devices set status='%s' where code='%s';", token1, token2); /* Puts entire query in a string */
-    if (mysql_query(conn, db_buf)) { // send SQL query 
-      syslog(LOG_ERR, "%s", mysql_error(conn));
-      exit(EXIT_FAILURE);} /* In case of MySQL sent query failure, close connection */
-    syslog(LOG_INFO, "MySQL sent query: %s", db_buf); 
-    mysql_close(conn); /* Close MySQL Connection */
-
+    FILE *fp;
+    struct tm *sTm;
+    char buff_time[50];
     time_t now = time (0);
     sTm = localtime (&now);
     strftime (buff_time, sizeof(buff_time), "%z %Y-%m-%d %A %H:%M:%S", sTm);
     fp = fopen("out.txt","a"); /* Open file in append monde */
-    fprintf(fp, "%s Read string: %s", buff_time, buf); /* Write ouput in file */
+    fprintf(fp, "%s Read string: %s", buff_time, buf); /* Write output in file */
     fclose(fp);/* Close file */
 }
-
-int main(int argc, char *argv[]) {
+void daemonize(void){
     syslog(LOG_NOTICE, "Entering Daemon");
     syslog (LOG_INFO, "Program started by User %d", getuid ());
     pid_t pid, sid;
+    if (getppid() == 1) return; /* Already a daemon */
     pid = fork(); //Fork the Parent Process
     if (pid < 0) { syslog(LOG_ERR, "Can not create a new PID for our child process");}
-    if (pid > 0) { exit(EXIT_SUCCESS); } //We got a good pid, Close the Parent Process
-    umask(0); //Change File Mask
-    sid = setsid(); //Create a new Signature Id for our child
+    if (pid > 0) { exit(EXIT_SUCCESS); } /* We got a good pid, Close the Parent Process */
+    umask(0); /* Change File Mask */
+    sid = setsid(); /* Create a new Signature Id for our child */
     if (sid < 0) { syslog(LOG_ERR, "Can not create a new SID on child process");}
     if ((chdir("/")) < 0) { syslog(LOG_ERR, "Can not change directory on child process");}
-    //Close Standard File Descriptors:
+    /* Close Standard File Descriptors: */
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-
-/* From here starts my program */
-
-    int fd = -1;
-    int baudrate = 115200;  // default
-    char serialport[]="/dev/ttyACM0";
-    char eolchar = '\n'; // When arduino finishes sending message
-    int timeout = 5000;
-    FILE *fp;
+}
+int main(int argc, char *argv[]) {
+    /* Serial */
+    int fd = -1, baudrate = 115200, timeout = 5000;
+    char serialport[]="/dev/ttyACM0", eolchar = '\n';
     fd = serialport_init(serialport, baudrate);
-    if (fd == -1) {
-      syslog(LOG_ERR, "Serial port not opened %s\n", serialport);
-      exit(EXIT_FAILURE);}
-      syslog(LOG_INFO, "Serial port opened %s\n",serialport);
+    if (fd == -1) { syslog(LOG_ERR, "Serial port not opened %s\n", serialport); exit(EXIT_FAILURE);}
+    syslog(LOG_INFO, "Serial port opened %s\n",serialport);
+    /*Socket*/
+    int listenfd;
+    int connfd;
+    socklen_t clilen;
+    socklen_t addrlen;
+    struct sockaddr_in servaddr;
+    struct sockaddr cliaddr;
+    pid_t childpid;
+    struct conf parms;
 
-    //----------------
-    //Main Process
-    //----------------
+    /* configuration file */
+    init_parameters(&parms);
+    parse_config(&parms);
 
-while(true){
+    daemonize();
+    /* socket */
+
+    //creation of the socket
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    //preparation of the socket address
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr(parms.ListenIP);
+    servaddr.sin_port = htons(atoi(parms.ListenPort));
+
+    if (bind(listenfd, (struct sockaddr *) &servaddr, sizeof (servaddr)) < 0) {
+        exit(EXIT_FAILURE);
+    }
+    listen(listenfd, LISTENQ);
+    syslog(LOG_INFO, "Server running...waiting for connections.");
+    signal(SIGCHLD, sig_chld);
+    /* accept , cycle , then fork exec */
+for(;;){
       memset(buf,0,buf_max);
       serialport_read_until(fd, buf, eolchar, buf_max, timeout);
-      process();    //Run our Process
-      usleep(50);    //Sleep for 60 seconds
-	}
+      if((childpid = fork()) == 0) { /* child process */
+        process();}
+      usleep(50);/* Sleep for 50 seconds */
+        clilen = addrlen = sizeof (struct sockaddr_in);
+        if ((connfd = accept(listenfd, &cliaddr, &clilen)) < 0) {
+            syslog(LOG_INFO, "accept <0");
+            if (errno == EINTR)
+                continue; /* back to fork() */
+            else {
+                syslog(LOG_INFO, "accept error");
+                continue;
+            }
+        }
+        if ((childpid = fork()) == 0) { /* child process */
+            close(listenfd); /* close listening socket */
+            web_child(connfd); /* process request */
+            exit(0);
+        }
+        close(connfd); /* parent closes connected socket */
+    }
+    return 0;
 }
