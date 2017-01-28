@@ -1,0 +1,17 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <syslog.h>
+#include <time.h>
+#include <string.h>
+#include <ctype.h>
+#include "arduino-serial-lib-daemon.h"
+#include <mysql/mysql.h>
