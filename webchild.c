@@ -5,7 +5,7 @@
 #define CONF_PATH               "."
 #define LISTENQ 5
 
-void web_child(int connfd){
+void web_child(int connfd, int fd){
     int n;
     char buffer[256];
     bzero(buffer,256);
@@ -15,10 +15,12 @@ void web_child(int connfd){
         exit(1);
     }
     printf("Here is the message: %s\n",buffer);
+    strncat(buffer,"\n", sizeof buffer);
     n = write(connfd,"I got your message",18);
+    serialport_write(fd, buffer); //I have to error check this
     if (n < 0){
         perror("ERROR writing to socket");
         exit(1);
     }
-    return 0;
+    return;
 }

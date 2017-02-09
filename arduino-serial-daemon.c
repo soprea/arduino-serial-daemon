@@ -21,30 +21,25 @@ void sig_chld(int signo) {
     }
     return;
 }
-void process(){
-    FILE *fp;
-    struct tm *sTm;
-    char buff_time[50];
-    time_t now = time (0);
-    sTm = localtime (&now);
-    strftime (buff_time, sizeof(buff_time), "%z %Y-%m-%d %A %H:%M:%S", sTm);
-    fp = fopen("out.txt","a"); /* Open file in append monde */
-    fprintf(fp, "%s Read string: %s", buff_time, buf); /* Write output in file */
-    fclose(fp);/* Close file */
-}
-void read_serial(){
+
+void read_serial(int fd){
         /* Serial */
-    int fd = -1, baudrate = 115200, timeout = 5000;
-    char serialport[]="/dev/ttyACM0", eolchar = '\n';
-    fd = serialport_init(serialport, baudrate);
-    if (fd == -1) { syslog(LOG_ERR, "Serial port not opened %s\n", serialport); exit(EXIT_FAILURE);}
-    syslog(LOG_INFO, "Serial port opened %s\n",serialport);
+    int timeout = 5000;
+    char eolchar = '\n';
     while (1){
         memset(buf,0,buf_max);
         serialport_read_until(fd, buf, eolchar, buf_max, timeout);
-        process();
+        struct tm *sTm;
+        char buff_time[50];
+        time_t now = time (0);
+        sTm = localtime (&now);
+        strftime (buff_time, sizeof(buff_time), "%z %Y-%m-%d %A %H:%M:%S", sTm);
+        FILE *fp = fopen("out.txt","a"); /* Open file in append monde */
+        fprintf(fp, "%s Read string: %s", buff_time, buf); /* Write output in file */
+        fclose(fp);/* Close file */        
     }
 }
+
 void daemonize(void){
     syslog(LOG_NOTICE, "Entering Daemon");
     syslog (LOG_INFO, "Program started by User %d", getuid ());
@@ -71,19 +66,23 @@ int main(int argc, char *argv[]) {
     struct sockaddr cliaddr;
     pid_t childpid;
     struct conf parms;
-
     /* configuration file */
     init_parameters(&parms);
     parse_config(&parms);
 
-    /* read the authorised user file */
-
     daemonize();
-    /* socket */
-
+    /* Serial communication */
+    int fd = -1, baudrate = 115200;
+//    char serialport[]= parms.SerialPort;
+    fd = serialport_init((parms.SerialPort), baudrate);
+    if (fd == -1) { syslog(LOG_ERR, "Serial port not opened %s\n", (parms.SerialPort)); exit(EXIT_FAILURE);}
+    syslog(LOG_INFO, "Serial port opened %s\n",(parms.SerialPort));
+    
+    if((childpid = fork()) == 0) { read_serial(fd);} /* child process */
+    
+        /* socket */
     //creation of the socket
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
-
     //preparation of the socket address
     servaddr.sin_family = AF_INET;
     //servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
@@ -98,10 +97,6 @@ int main(int argc, char *argv[]) {
     signal(SIGCHLD, sig_chld);
     /* accept , cycle , then fork exec */
 while(1){
-      if((childpid = fork()) == 0) { /* child process */
-         read_serial();
-       }
-        // continue;}
         clilen = addrlen = sizeof (struct sockaddr_in);
         if ((connfd = accept(listenfd, &cliaddr, &clilen)) < 0) {
             syslog(LOG_INFO, "accept <0");
@@ -114,8 +109,7 @@ while(1){
         }
         if ((childpid = fork()) == 0) { /* child process */
             close(listenfd); /* close listening socket */
-            web_child(connfd); /* process request */
-            //    close(connfd);
+            web_child(connfd, fd); /* process request */
             exit(0);
         }
         close(connfd); /* parent closes connected socket */
