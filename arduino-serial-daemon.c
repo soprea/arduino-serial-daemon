@@ -1,6 +1,7 @@
 #include "header.h"
 #include "config.h"
 #include "webchild.h"
+#include "webserver.h"
 
 #define DAEMON_NAME "arduino-serial-daemon"
 #define LISTENQ 5
@@ -36,7 +37,8 @@ void read_serial(int fd){
         strftime (buff_time, sizeof(buff_time), "%z %Y-%m-%d %A %H:%M:%S", sTm);
         FILE *fp = fopen("out.txt","a"); /* Open file in append monde */
         fprintf(fp, "%s Read string: %s", buff_time, buf); /* Write output in file */
-        fclose(fp);/* Close file */        
+        fclose(fp);/* Close file */
+        sleep(2);
     }
 }
 
@@ -57,6 +59,7 @@ void daemonize(void){
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
 }
+
 int main(int argc, char *argv[]) {
     int listenfd;
     int connfd;
@@ -77,7 +80,8 @@ int main(int argc, char *argv[]) {
     fd = serialport_init((parms.SerialPort), baudrate);
     if (fd == -1) { syslog(LOG_ERR, "Serial port not opened %s\n", (parms.SerialPort)); exit(EXIT_FAILURE);}
     syslog(LOG_INFO, "Serial port opened %s\n",(parms.SerialPort));
-    
+
+    if((childpid = fork()) == 0) { webserver(fd);} /* child process */
     if((childpid = fork()) == 0) { read_serial(fd);} /* child process */
     
         /* socket */

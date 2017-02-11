@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,3 +16,4 @@
 #include <ctype.h>
 #include "arduino-serial-lib-daemon.h"
 #include <mysql/mysql.h>
+#include "mongoose.h"
