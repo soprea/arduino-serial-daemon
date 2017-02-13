@@ -5,13 +5,10 @@
   <title>Connected device demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" type="text/css" href="style.css">
-  <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
-  <script type="text/javascript" src="main.js"></script>
-  <script type="text/javascript" src="key.js"></script>
 </head>
-<body onLoad="Load()" onKeyDown="Down(event)" onKeyUp="Up(event)">
+<body>
   <div class="content">
-    <img src="logo.png" alt = "logo" style="float:right; height: 50px; border-radius: 3px;">
+    <img src="logo.png" class="logo" alt="logo">
     <h1>Connected device demo - RESTful call</h1>
 
     <center><iframe src="http://192.168.0.99:8080/stream/video.mjpeg" width="320" height="240"></iframe></center>
@@ -20,21 +17,22 @@
     <form method="POST" action="/save">
       <fieldset>
         <legend>Device settings</legend>
-        <label>Setting 1:</label> <input type="text"
-          name="setting1" value="<!--#call setting1 -->" >
-        <label>Setting 2:</label> <input type="text"
-          name="setting2" value="<!--#call setting2 -->" >
+        <label>Setting 1:</label> <input type="text" name="setting1" value="<!--#call setting1 -->" >
+        <label>Setting 2:</label> <input type="text" name="setting2" value="<!--#call setting2 -->" >
 
         <div>
           <button type="submit">Save Settings</button>
         </div>
-
       </fieldset>
     </form>
 
     <h1>Dashboard section</h1>
     <label>CPU usage:</label> <span id="cpu_usage">&nbsp;</span>
-
   </div>
+
+  <script type="text/javascript" src="jquery-3.1.1.min.js"></script>
+  <script type="text/javascript" src="lodash.core.min.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript" src="key.js"></script>
 </body>
 </html>
