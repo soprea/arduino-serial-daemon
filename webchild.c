@@ -15,9 +15,9 @@ void web_child(int connfd, int fd){
         exit(1);
     }
     //printf("Here is the message: %s\n",buffer);
-    strncat(buffer,"\n", sizeof buffer);
+    //strncat(buffer,"\n", sizeof buffer);
     //n = write(connfd,"I got your message",18);
-    serialport_write(fd, buffer); //I have to error check this
+        serialport_write(fd, buffer); //I have to error check this
         FILE *fp = fopen("out1.txt","a"); /* Open file in append monde */
         fprintf(fp, "Read string: %s", buffer); /* Write output in file */
         fclose(fp);/* Close file */
