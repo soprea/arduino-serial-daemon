@@ -1,6 +1,4 @@
-// Copyright (c) 2015 Cesanta Software Limited
-// All rights reserved
-
+#include "config.h"
 #include "header.h"
 #include "webserver.h"
 
@@ -111,23 +109,28 @@ void webserver() {
   struct mg_connection *nc;
   cs_stat_t st;
 
+  struct conf parms;
+  /* configuration file */
+  init_parameters(&parms);
+  parse_config(&parms);  
+  
   mg_mgr_init(&mgr, NULL);
   nc = mg_bind(&mgr, s_http_port, ev_handler);
   if (nc == NULL) {
-    fprintf(stderr, "Cannot bind to %s\n", s_http_port);
+    syslog(LOG_INFO, "Cannot bind to %s\n", s_http_port);
     exit(1);
   }
 
   // Set up HTTP server parameters
   mg_set_protocol_http_websocket(nc);
-  s_http_server_opts.document_root = "/home/soprea/NetBeansProjects/arduino-serial-daemon/arduino-serial-daemon/web_root/";  // Set up web root directory
+  s_http_server_opts.document_root = parms.WebRoot;;  // Set up web root directory
 
   if (mg_stat(s_http_server_opts.document_root, &st) != 0) {
-    fprintf(stderr, "%s", "Cannot find web_root directory, exiting\n");
+    syslog(LOG_INFO, "Cannot find web_root directory, exiting\n");
     exit(1);
   }
 
-  printf("Starting web server on port %s\n", s_http_port);
+  syslog(LOG_INFO,"Starting web server on port %s\n", s_http_port);
   for (;;) {
     mg_mgr_poll(&mgr, 1000);
   }

@@ -7,12 +7,15 @@
 #define DEF_SERVER_PORT         "3000"
 #define DEF_SERIAL_PORT         "/dev/ttyACM0"
 #define MAXLINE                 3000
+#define DEF_WEB_ROOT             "/root/ardubot/arduino-serial-daemon/web_root/"
 
 /* initialise data to default values */
 void init_parameters (struct conf * parms) {
   strncpy (parms->ListenIP, DEF_SERVER_IP, CONF_STRING_LEN);
   strncpy (parms->ListenPort, DEF_SERVER_PORT, CONF_STRING_LEN);
   strncpy (parms->SerialPort, DEF_SERIAL_PORT, CONF_STRING_LEN);
+  strncpy (parms->WebRoot, DEF_WEB_ROOT, CONF_STRING_LEN);
+
 }
 
 /* trim: get rid of trailing and leading whitespace */
@@ -64,6 +67,8 @@ void parse_config (struct conf * parms) {
       strncpy (parms->ListenPort, value, CONF_STRING_LEN);
     else if (strcmp(name, "SerialPort")==0)
       strncpy (parms->SerialPort, value, CONF_STRING_LEN);
+    else if (strcmp(name, "WebRoot")==0)
+      strncpy (parms->WebRoot, value, CONF_STRING_LEN);    
     else
       syslog (LOG_INFO,"WARNING: %s/%s: Unknown name/value pair!\n", name, value);
   }
