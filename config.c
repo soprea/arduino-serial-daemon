@@ -1,7 +1,7 @@
 #include "header.h"
 #include "config.h"
 
-#define CONFIG_FILE             "arduino-serial-daemon.conf"
+#define CONFIG_FILE             "/home/soprea/NetBeansProjects/arduino-serial-daemon/arduino-serial-daemon/arduino-serial-daemon.conf"
 #define CONF_STRING_LEN         100
 #define DEF_SERVER_IP           "127.0.0.1"
 #define DEF_SERVER_PORT         "4000"

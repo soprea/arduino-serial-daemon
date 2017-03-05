@@ -118,7 +118,7 @@ void webserver() {
   mg_mgr_init(&mgr, NULL);
   nc = mg_bind(&mgr, s_http_port, ev_handler);
   if (nc == NULL) {
-    syslog(LOG_INFO, "Cannot bind to %s\n", s_http_port);
+    syslog(LOG_ERR, "Cannot bind to %s\n", s_http_port);
     exit(1);
   }
 
@@ -127,7 +127,7 @@ void webserver() {
   s_http_server_opts.document_root = parms.WebRoot;;  // Set up web root directory
 
   if (mg_stat(s_http_server_opts.document_root, &st) != 0) {
-    syslog(LOG_INFO, "Cannot find web_root directory, exiting\n");
+    syslog(LOG_ERR, "Cannot find web_root directory, exiting\n");
     exit(1);
   }
 
