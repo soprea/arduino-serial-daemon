@@ -8,7 +8,6 @@ struct device_settings {
 };
 char keypressed[10];
 
-const char *s_http_port = "8000";
 struct mg_serve_http_opts s_http_server_opts;
 struct device_settings s_settings = {"value1", "value2"};
 void sendKey(char *keypressed){
@@ -113,6 +112,8 @@ void webserver() {
   /* configuration file */
   init_parameters(&parms);
   parse_config(&parms);  
+  
+  const char *s_http_port = parms.WebPort;  
   
   mg_mgr_init(&mgr, NULL);
   nc = mg_bind(&mgr, s_http_port, ev_handler);

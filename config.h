@@ -6,7 +6,8 @@ struct conf {
     char ListenIP[CONF_STRING_LEN];
     char ListenPort[CONF_STRING_LEN];
     char SerialPort[CONF_STRING_LEN];
-    char WebRoot[CONF_STRING_LEN];    
+    char WebRoot[CONF_STRING_LEN];
+    char WebPort[CONF_STRING_LEN];    
     char group[CONF_STRING_LEN];
     char user[CONF_STRING_LEN];
     char groupThatCanConnect[CONF_STRING_LEN];

@@ -4,10 +4,11 @@
 #define CONFIG_FILE             "arduino-serial-daemon.conf"
 #define CONF_STRING_LEN         100
 #define DEF_SERVER_IP           "127.0.0.1"
-#define DEF_SERVER_PORT         "3000"
+#define DEF_SERVER_PORT         "4000"
 #define DEF_SERIAL_PORT         "/dev/ttyACM0"
 #define MAXLINE                 3000
-#define DEF_WEB_ROOT             "/root/ardubot/arduino-serial-daemon/web_root/"
+#define DEF_WEB_ROOT            "/root/ardubot/arduino-serial-daemon/web_root/"
+#define DEF_WEB_PORT            "6080" 
 
 /* initialise data to default values */
 void init_parameters (struct conf * parms) {
@@ -15,6 +16,7 @@ void init_parameters (struct conf * parms) {
   strncpy (parms->ListenPort, DEF_SERVER_PORT, CONF_STRING_LEN);
   strncpy (parms->SerialPort, DEF_SERIAL_PORT, CONF_STRING_LEN);
   strncpy (parms->WebRoot, DEF_WEB_ROOT, CONF_STRING_LEN);
+  strncpy (parms->WebPort, DEF_WEB_PORT, CONF_STRING_LEN);
 
 }
 
@@ -68,7 +70,9 @@ void parse_config (struct conf * parms) {
     else if (strcmp(name, "SerialPort")==0)
       strncpy (parms->SerialPort, value, CONF_STRING_LEN);
     else if (strcmp(name, "WebRoot")==0)
-      strncpy (parms->WebRoot, value, CONF_STRING_LEN);    
+      strncpy (parms->WebRoot, value, CONF_STRING_LEN);
+    else if (strcmp(name, "WebPort")==0)
+      strncpy (parms->WebPort, value, CONF_STRING_LEN);       
     else
       syslog (LOG_INFO,"WARNING: %s/%s: Unknown name/value pair!\n", name, value);
   }
