@@ -3,7 +3,7 @@
 #include "webchild.h"
 #include "webserver.h"
 
-#define DAEMON_NAME "arduino-serial-daemon"
+#define DAEMON_NAME "ardubot"
 #define LISTENQ 5
 #define MAXLINE 3000
 
@@ -81,9 +81,8 @@ int main(int argc, char *argv[]) {
     if (fd == -1) { syslog(LOG_ERR, "Serial port not opened %s\n", (parms.SerialPort)); exit(EXIT_FAILURE);}
     syslog(LOG_INFO, "Serial port opened %s\n",(parms.SerialPort));
 
-    if((childpid = fork()) == 0) { webserver();} /* child process */
-    syslog(LOG_INFO, "web_server forked");
-    sleep(1);
+//    if((childpid = fork()) == 0) { webserver();} /* child process */
+//    syslog(LOG_INFO, "web_server forked");
     if((childpid = fork()) == 0) { read_serial(fd);} /* child process */
     syslog(LOG_INFO, "read_serial forked");
     

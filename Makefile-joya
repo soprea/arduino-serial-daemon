@@ -1,5 +1,0 @@
-all:
-	gcc joya.c -o joya -Wall -Wno-unused-function
-
-clean:
-	rm -f joya

@@ -10,21 +10,24 @@ char keypressed[10];
 
 struct mg_serve_http_opts s_http_server_opts;
 struct device_settings s_settings = {"value1", "value2"};
+
+  struct conf parms;
+  /* configuration file */
+
+  
 void sendKey(char *keypressed){
     int sock;                        /* Socket descriptor */
     struct sockaddr_in echoServAddr; /* Echo server address */
-    char *servIP = "127.0.0.1";                   /* Server IP address (dotted quad) */
     int value = 1;
-    int echoServPort = 4000;  /* server port */
-
+    
     /* Create a reliable, stream socket using TCP */
     sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     /* Construct the server address structure */
     memset(&echoServAddr, 0, sizeof(echoServAddr));     /* Zero out structure */
     echoServAddr.sin_family      = AF_INET;             /* Internet address family */
-    echoServAddr.sin_addr.s_addr = inet_addr(servIP);   /* Server IP address */
-    echoServAddr.sin_port        = htons(echoServPort); /* Server port */
+    echoServAddr.sin_addr.s_addr = inet_addr(parms.ServerIP);   /* Server IP address */
+    echoServAddr.sin_port        = htons(atoi(parms.ListenPort)); /* Server port */
 
     /* Establish the connection to the echo server */
     if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
@@ -103,17 +106,33 @@ void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   }
 }
 
-void webserver() {
+void daemonize(void){
+    syslog(LOG_NOTICE, "Entering Daemon");
+    syslog (LOG_INFO, "Program started by User %d", getuid ());
+    pid_t pid, sid;
+    if (getppid() == 1) return; /* Already a daemon */
+    pid = fork(); //Fork the Parent Process
+    if (pid < 0) { syslog(LOG_ERR, "Can not create a new PID for our child process");}
+    if (pid > 0) { exit(EXIT_SUCCESS); } /* We got a good pid, Close the Parent Process */
+    umask(0); /* Change File Mask */
+    sid = setsid(); /* Create a new Signature Id for our child */
+    if (sid < 0) { syslog(LOG_ERR, "Can not create a new SID on child process");}
+    if ((chdir("/")) < 0) { syslog(LOG_ERR, "Can not change directory on child process");}
+    /* Close Standard File Descriptors: */
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+}
+
+int main() {
   struct mg_mgr mgr;
   struct mg_connection *nc;
   cs_stat_t st;
-
-  struct conf parms;
-  /* configuration file */
   init_parameters(&parms);
-  parse_config(&parms);  
-  
+  parse_config(&parms);
   const char *s_http_port = parms.WebPort;  
+  
+  daemonize();
   
   mg_mgr_init(&mgr, NULL);
   nc = mg_bind(&mgr, s_http_port, ev_handler);
@@ -133,9 +152,10 @@ void webserver() {
 
   syslog(LOG_INFO,"Starting web server on port %s\n", s_http_port);
   for (;;) {
+      sleep(1);
     mg_mgr_poll(&mgr, 1000);
   }
   mg_mgr_free(&mgr);
 
-//  return 0;
+  return 0;
 }

@@ -1,23 +1,27 @@
 #include "header.h"
 #include "config.h"
 
-#define CONFIG_FILE             "/home/soprea/NetBeansProjects/arduino-serial-daemon/arduino-serial-daemon/arduino-serial-daemon.conf"
+#define CONFIG_FILE             "/etc/ardubot.conf"
 #define CONF_STRING_LEN         100
 #define DEF_SERVER_IP           "127.0.0.1"
+#define DEF_LISTEN_IP           "127.0.0.1"
 #define DEF_SERVER_PORT         "4000"
+#define DEF_LISTEN_PORT         "4000"
 #define DEF_SERIAL_PORT         "/dev/ttyACM0"
 #define MAXLINE                 3000
-#define DEF_WEB_ROOT            "/root/ardubot/arduino-serial-daemon/web_root/"
-#define DEF_WEB_PORT            "6080" 
+#define DEF_WEB_ROOT            "/root/ardubot/web_root/"
+#define DEF_WEB_PORT            "6080"
+
 
 /* initialise data to default values */
 void init_parameters (struct conf * parms) {
-  strncpy (parms->ListenIP, DEF_SERVER_IP, CONF_STRING_LEN);
-  strncpy (parms->ListenPort, DEF_SERVER_PORT, CONF_STRING_LEN);
+  strncpy (parms->ListenIP, DEF_LISTEN_IP, CONF_STRING_LEN);
+  strncpy (parms->ServerIP, DEF_SERVER_IP, CONF_STRING_LEN);  
+  strncpy (parms->ListenPort, DEF_LISTEN_PORT, CONF_STRING_LEN);
+  strncpy (parms->ServerPort, DEF_SERVER_PORT, CONF_STRING_LEN);  
   strncpy (parms->SerialPort, DEF_SERIAL_PORT, CONF_STRING_LEN);
   strncpy (parms->WebRoot, DEF_WEB_ROOT, CONF_STRING_LEN);
   strncpy (parms->WebPort, DEF_WEB_PORT, CONF_STRING_LEN);
-
 }
 
 /* trim: get rid of trailing and leading whitespace */
@@ -72,7 +76,11 @@ void parse_config (struct conf * parms) {
     else if (strcmp(name, "WebRoot")==0)
       strncpy (parms->WebRoot, value, CONF_STRING_LEN);
     else if (strcmp(name, "WebPort")==0)
-      strncpy (parms->WebPort, value, CONF_STRING_LEN);       
+      strncpy (parms->WebPort, value, CONF_STRING_LEN);
+    else if (strcmp(name, "ServerIP")==0)
+      strncpy (parms->ServerIP, value, CONF_STRING_LEN);
+    else if (strcmp(name, "ServerPort")==0)    
+      strncpy (parms->ServerPort, value, CONF_STRING_LEN);        
     else
       syslog (LOG_INFO,"WARNING: %s/%s: Unknown name/value pair!\n", name, value);
   }

@@ -14,6 +14,5 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
-#include "arduino-serial-lib-daemon.h"
-#include <mysql/mysql.h>
+#include "ardubot-lib.h"
 #include "mongoose.h"

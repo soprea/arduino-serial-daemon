@@ -4,7 +4,9 @@
 
 struct conf {
     char ListenIP[CONF_STRING_LEN];
+    char ServerIP[CONF_STRING_LEN];    
     char ListenPort[CONF_STRING_LEN];
+    char ServerPort[CONF_STRING_LEN];    
     char SerialPort[CONF_STRING_LEN];
     char WebRoot[CONF_STRING_LEN];
     char WebPort[CONF_STRING_LEN];    

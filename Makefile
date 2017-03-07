@@ -1,8 +1,17 @@
 all:
-	gcc `mysql_config --cflags` `mysql_config --libs` arduino-serial-daemon.c arduino-serial-lib-daemon.c config.c webchild.c mysql.c webserver.c mongoose.c -o arduino-serial-daemon -Wall -Wno-unused-function -pthread
+	gcc ardubot.c ardubot-lib.c config.c webchild.c -o ardubot -Wall -Wno-unused-function -pthread
+	gcc joya.c -o joya -Wall -Wno-unused-function
+	gcc webserver.c mongoose.c config.c -o webserver -Wall -Wno-unused-function
 
 clean:
-	rm -f arduino-serial-daemon
+	rm -f ardubot
+	rm -f joya
+	rm -f webserver
 
+install:
+	cp ardubot.conf /etc/ardubot.conf
+	
+uninstall:
+	rm -f /etc/ardubot.conf
 #PROG = webserver
 #include examples.mk
