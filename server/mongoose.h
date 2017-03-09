@@ -1615,6 +1615,11 @@ void mg_lwip_set_keepalive_params(struct mg_connection *nc, int idle,
                                   int interval, int count);
 #endif
 
+/* For older version of LWIP */
+#ifndef ipX_2_ip
+#define ipX_2_ip(x) (x)
+#endif
+
 #endif /* MG_LWIP */
 
 #endif /* CS_COMMON_PLATFORMS_LWIP_MG_LWIP_H_ */
@@ -3127,6 +3132,8 @@ struct mg_ssl_if_conn_params {
   const char *ca_cert;
   const char *server_name;
   const char *cipher_suites;
+  const char *psk_identity;
+  const char *psk_key;
 };
 
 enum mg_ssl_if_result mg_ssl_if_conn_init(
@@ -3544,6 +3551,15 @@ struct mg_connect_opts {
    * name verification.
    */
   const char *ssl_server_name;
+  /*
+   * PSK identity and key. Identity is a NUL-terminated string and key is a hex
+   * string. Key must be either 16 or 32 bytes (32 or 64 hex digits) for AES-128
+   * or AES-256 respectively.
+   * Note: Default list of cipher suites does not include PSK suites, if you
+   * want to use PSK you will need to set ssl_cipher_suites as well.
+   */
+  const char *ssl_psk_identity;
+  const char *ssl_psk_key;
 #endif
 };
 

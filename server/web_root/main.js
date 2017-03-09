@@ -8,5 +8,5 @@ $(document).ready(function() {
         $('#cpu_usage').text(json.result + '% ');
       }
     });
-  }, 2000);
+  }, 1000);
 });

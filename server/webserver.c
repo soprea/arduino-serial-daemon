@@ -1,21 +1,21 @@
-#include "config.h"
-#include "header.h"
-#include "webserver.h"
+#include "mongoose.h"
+#include <syslog.h>
+#include "../config.h"
+#include "../header.h"
 
 struct device_settings {
   char setting1[100];
   char setting2[100];
 };
-char keypressed[10];
 
-struct mg_serve_http_opts s_http_server_opts;
-struct device_settings s_settings = {"value1", "value2"};
+struct conf parms;
+/* configuration file */
+static char keypressed[10];
+static const char *s_http_port = parms.WebPort;
+static struct mg_serve_http_opts s_http_server_opts;
+static struct device_settings s_settings = {"value1", "value2"};
 
-  struct conf parms;
-  /* configuration file */
-
-  
-void sendKey(char *keypressed){
+static void sendKey(char *keypressed){
     int sock;                        /* Socket descriptor */
     struct sockaddr_in echoServAddr; /* Echo server address */
     int value = 1;
@@ -44,7 +44,7 @@ void sendKey(char *keypressed){
     close(sock);    
 }
 
-void handle_save(struct mg_connection *nc, struct http_message *hm) {
+static void handle_save(struct mg_connection *nc, struct http_message *hm) {
   // Get form variables and store settings values
   mg_get_http_var(&hm->body, "setting1", s_settings.setting1,
                   sizeof(s_settings.setting1));
@@ -53,16 +53,12 @@ void handle_save(struct mg_connection *nc, struct http_message *hm) {
   mg_get_http_var(&hm->body, "key_pressed", keypressed,
                   sizeof(keypressed));
   sendKey(keypressed);
-        FILE *fp = fopen("out2.txt","a"); /* Open file in append monde */
-        fprintf(fp, "%s Read string: %s \n", s_settings.setting1, s_settings.setting2); /* Write output in file */
-        fclose(fp);/* Close file */
- //           serialport_write(fd, keypressed); //I have to error check this
 
   // Send response
   mg_http_send_redirect(nc, 302, mg_mk_str("/"), mg_mk_str(NULL));
 }
 
-void handle_get_cpu_usage(struct mg_connection *nc) {
+static void handle_get_cpu_usage(struct mg_connection *nc) {
   // Generate random value, as an example of changing CPU usage
   // Getting real CPU usage depends on the OS.
   int cpu_usage = (double) rand() / RAND_MAX * 100.0;
@@ -77,7 +73,7 @@ void handle_get_cpu_usage(struct mg_connection *nc) {
   mg_send_http_chunk(nc, "", 0);
 }
 
-void handle_ssi_call(struct mg_connection *nc, const char *param) {
+static void handle_ssi_call(struct mg_connection *nc, const char *param) {
   if (strcmp(param, "setting1") == 0) {
     mg_printf_html_escape(nc, "%s", s_settings.setting1);
   } else if (strcmp(param, "setting2") == 0) {
@@ -85,7 +81,7 @@ void handle_ssi_call(struct mg_connection *nc, const char *param) {
   }
 }
 
-void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
+static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   struct http_message *hm = (struct http_message *) ev_data;
 
   switch (ev) {
@@ -124,20 +120,17 @@ void daemonize(void){
     close(STDERR_FILENO);
 }
 
-int main() {
+int main(void) {
+  init_parameters(&parms);
+  parse_config(&parms);
   struct mg_mgr mgr;
   struct mg_connection *nc;
   cs_stat_t st;
-  init_parameters(&parms);
-  parse_config(&parms);
-  const char *s_http_port = parms.WebPort;  
-  
-  daemonize();
-  
+daemonize();
   mg_mgr_init(&mgr, NULL);
   nc = mg_bind(&mgr, s_http_port, ev_handler);
   if (nc == NULL) {
-    syslog(LOG_ERR, "Cannot bind to %s\n", s_http_port);
+    fprintf(stderr, "Cannot bind to %s\n", s_http_port);
     exit(1);
   }
 
@@ -146,13 +139,12 @@ int main() {
   s_http_server_opts.document_root = parms.WebRoot;;  // Set up web root directory
 
   if (mg_stat(s_http_server_opts.document_root, &st) != 0) {
-    syslog(LOG_ERR, "Cannot find web_root directory, exiting\n");
+    fprintf(stderr, "%s", "Cannot find web_root directory, exiting\n");
     exit(1);
   }
 
-  syslog(LOG_INFO,"Starting web server on port %s\n", s_http_port);
+  printf("Starting web server on port %s\n", s_http_port);
   for (;;) {
-      sleep(1);
     mg_mgr_poll(&mgr, 1000);
   }
   mg_mgr_free(&mgr);

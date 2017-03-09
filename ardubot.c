@@ -1,7 +1,6 @@
 #include "header.h"
 #include "config.h"
 #include "webchild.h"
-#include "webserver.h"
 
 #define DAEMON_NAME "ardubot"
 #define LISTENQ 5
