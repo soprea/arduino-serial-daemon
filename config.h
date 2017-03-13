@@ -12,6 +12,7 @@ struct conf {
     char WebPort[CONF_STRING_LEN];    
     char group[CONF_STRING_LEN];
     char user[CONF_STRING_LEN];
+    char SerBaudRate[CONF_STRING_LEN];    
     char groupThatCanConnect[CONF_STRING_LEN];
 } conf;
 

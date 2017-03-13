@@ -7,8 +7,8 @@
 #define MAXLINE 3000
 
 
-const int buf_max = 32;
-char buf[32];
+const int buf_max = 64;
+char buf[64];
 
 void sig_chld(int signo) {
     pid_t pid;
@@ -36,8 +36,9 @@ void read_serial(int fd){
         strftime (buff_time, sizeof(buff_time), "%z %Y-%m-%d %A %H:%M:%S", sTm);
         FILE *fp = fopen("out.txt","a"); /* Open file in append monde */
         fprintf(fp, "%s Read string: %s", buff_time, buf); /* Write output in file */
+        fprintf(fp,"%s", buf);
         fclose(fp);/* Close file */
-        sleep(2);
+        usleep(50);
     }
 }
 
@@ -74,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     daemonize();
     /* Serial communication */
-    int fd = -1, baudrate = 115200;
+    int fd = -1, baudrate = atoi(parms.SerBaudRate);
 //    char serialport[]= parms.SerialPort;
     fd = serialport_init((parms.SerialPort), baudrate);
     if (fd == -1) { syslog(LOG_ERR, "Serial port not opened %s\n", (parms.SerialPort)); exit(EXIT_FAILURE);}

@@ -73,6 +73,21 @@ static void handle_get_cpu_usage(struct mg_connection *nc) {
   mg_send_http_chunk(nc, "", 0);
 }
 
+static void handle_get_ping(struct mg_connection *nc) {
+  // Generate random value, as an example of changing CPU usage
+  // Getting real CPU usage depends on the OS.
+  int ping = (double) rand() / RAND_MAX * 100.0;
+
+  // Use chunked encoding in order to avoid calculating Content-Length
+  mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+
+  // Output JSON object which holds CPU usage data
+  mg_printf_http_chunk(nc, "{ \"result\": %d }", ping);
+
+  // Send empty chunk, the end of response
+  mg_send_http_chunk(nc, "", 0);
+}
+
 static void handle_ssi_call(struct mg_connection *nc, const char *param) {
   if (strcmp(param, "setting1") == 0) {
     mg_printf_html_escape(nc, "%s", s_settings.setting1);
@@ -90,6 +105,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
         handle_save(nc, hm);
       } else if (mg_vcmp(&hm->uri, "/get_cpu_usage") == 0) {
         handle_get_cpu_usage(nc);
+      } else if (mg_vcmp(&hm->uri, "/get_ping") == 0) {
+        handle_get_ping(nc);        
       } else {
         mg_serve_http(nc, hm, s_http_server_opts);  // Serve static content
       }

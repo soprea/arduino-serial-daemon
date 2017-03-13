@@ -11,6 +11,7 @@
 #define MAXLINE                 3000
 #define DEF_WEB_ROOT            "/root/ardubot/web_root/"
 #define DEF_WEB_PORT            "6080"
+#define DEF_SER_BAUD_RATE       "115200"
 
 
 /* initialise data to default values */
@@ -22,6 +23,7 @@ void init_parameters (struct conf * parms) {
   strncpy (parms->SerialPort, DEF_SERIAL_PORT, CONF_STRING_LEN);
   strncpy (parms->WebRoot, DEF_WEB_ROOT, CONF_STRING_LEN);
   strncpy (parms->WebPort, DEF_WEB_PORT, CONF_STRING_LEN);
+  strncpy (parms->SerBaudRate, DEF_SER_BAUD_RATE, CONF_STRING_LEN);  
 }
 
 /* trim: get rid of trailing and leading whitespace */
