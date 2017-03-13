@@ -19,6 +19,10 @@
         <legend>Device settings</legend>
         <label>Setting 1:</label> <input type="text" name="setting1" value="<!--#call setting1 -->" >
         <label>Setting 2:</label> <input type="text" name="setting2" value="<!--#call setting2 -->" >
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8143f613b3b73c9fdb2576df0a227bf81571bc37
         <div>
           <button type="submit">Save Settings</button>
         </div>
@@ -27,9 +31,12 @@
 
     <h1>Dashboard section</h1>
     <label>CPU usage:</label> <span id="cpu_usage">&nbsp;</span>
+<<<<<<< HEAD
     <label>Temp Hum Feel:</label> <span id="temp_hum_feel">&nbsp;</span>
     <label>Ping:</label> <span id="ping">&nbsp;</span>
     <label>Motion:</label> <span id="motion">&nbsp;</span>
+=======
+>>>>>>> 8143f613b3b73c9fdb2576df0a227bf81571bc37
   </div>
 
   <script type="text/javascript" src="jquery-3.1.1.min.js"></script>

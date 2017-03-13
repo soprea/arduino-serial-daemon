@@ -82,6 +82,6 @@ $(document).ready(function() {
 		}
 	}
 
-	$(document).on('keydown', _.throttle(keyDownPostEvent, 250));
-	$(document).on('keyup', _.throttle(keyUpPostEvent, 250));
+	$(document).on('keydown', _.throttle(keyDownPostEvent, 1000));
+	$(document).on('keyup', _.throttle(keyUpPostEvent, 1000));
 });
