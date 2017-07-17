@@ -17,7 +17,7 @@ void sig_chld(int signo) {
 
     while ((pid = waitpid(-1, &stat, WNOHANG)) > 0) {
         sprintf(line, "child %d terminated", pid);
-        syslog(LOG_INFO, line);
+        syslog(LOG_INFO, "%s/n", line);
     }
     return;
 }
