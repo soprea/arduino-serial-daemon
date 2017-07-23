@@ -15,11 +15,11 @@ static const char *s_http_port = parms.WebPort;
 static struct mg_serve_http_opts s_http_server_opts;
 static struct device_settings s_settings = {"value1", "value2"};
 
-static void sendKey(char *keypressed){
+void sendKey(char *keypressed){
     int sock;                        /* Socket descriptor */
     struct sockaddr_in echoServAddr; /* Echo server address */
     int value = 1;
-    
+
     /* Create a reliable, stream socket using TCP */
     sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -27,7 +27,7 @@ static void sendKey(char *keypressed){
     memset(&echoServAddr, 0, sizeof(echoServAddr));     /* Zero out structure */
     echoServAddr.sin_family      = AF_INET;             /* Internet address family */
     echoServAddr.sin_addr.s_addr = inet_addr(parms.ServerIP);   /* Server IP address */
-    echoServAddr.sin_port        = htons(atoi(parms.ListenPort)); /* Server port */
+    echoServAddr.sin_port        = htons(atoi(parms.ServerPort)); /* Server port */
 
     /* Establish the connection to the echo server */
     if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
@@ -41,7 +41,7 @@ static void sendKey(char *keypressed){
       /* Send this */
       if (send(sock, keypressed, sizeof(keypressed), 0) != sizeof(keypressed))
             exit(0);
-    close(sock);    
+    close(sock);
 }
 
 static void handle_save(struct mg_connection *nc, struct http_message *hm) {
@@ -106,7 +106,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
       } else if (mg_vcmp(&hm->uri, "/get_cpu_usage") == 0) {
         handle_get_cpu_usage(nc);
       } else if (mg_vcmp(&hm->uri, "/get_ping") == 0) {
-        handle_get_ping(nc);        
+        handle_get_ping(nc);
       } else {
         mg_serve_http(nc, hm, s_http_server_opts);  // Serve static content
       }
@@ -119,18 +119,18 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   }
 }
 
-void daemonize(void){
-    syslog(LOG_NOTICE, "Entering Daemon");
-    syslog (LOG_INFO, "Program started by User %d", getuid ());
+static void daemonize(void){
+    syslog(LOG_NOTICE, "Webserver: Entering Daemon");
+    syslog (LOG_INFO, "Webserver: Program started by User %d", getuid ());
     pid_t pid, sid;
     if (getppid() == 1) return; /* Already a daemon */
     pid = fork(); //Fork the Parent Process
-    if (pid < 0) { syslog(LOG_ERR, "Can not create a new PID for our child process");}
+    if (pid < 0) { syslog(LOG_ERR, "Webserver: can not create a new PID for our child process");}
     if (pid > 0) { exit(EXIT_SUCCESS); } /* We got a good pid, Close the Parent Process */
     umask(0); /* Change File Mask */
     sid = setsid(); /* Create a new Signature Id for our child */
-    if (sid < 0) { syslog(LOG_ERR, "Can not create a new SID on child process");}
-    if ((chdir("/")) < 0) { syslog(LOG_ERR, "Can not change directory on child process");}
+    if (sid < 0) { syslog(LOG_ERR, "Webserver: Can not create a new SID on child process");}
+    if ((chdir("/")) < 0) { syslog(LOG_ERR, "Webserver: Can not change directory on child process");}
     /* Close Standard File Descriptors: */
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
@@ -143,11 +143,11 @@ int main(void) {
   struct mg_mgr mgr;
   struct mg_connection *nc;
   cs_stat_t st;
-daemonize();
+  daemonize();
   mg_mgr_init(&mgr, NULL);
   nc = mg_bind(&mgr, s_http_port, ev_handler);
   if (nc == NULL) {
-    fprintf(stderr, "Cannot bind to %s\n", s_http_port);
+    fprintf(stderr, "Webserver: Cannot bind to %s\n", s_http_port);
     exit(1);
   }
 
@@ -156,11 +156,11 @@ daemonize();
   s_http_server_opts.document_root = parms.WebRoot;;  // Set up web root directory
 
   if (mg_stat(s_http_server_opts.document_root, &st) != 0) {
-    fprintf(stderr, "%s", "Cannot find web_root directory, exiting\n");
+    fprintf(stderr, "%s", "Webserver: Cannot find web_root directory, exiting\n");
     exit(1);
   }
 
-  printf("Starting web server on port %s\n", s_http_port);
+  printf("Webserver: Starting webserver on port %s\n", s_http_port);
   for (;;) {
     mg_mgr_poll(&mgr, 1000);
   }

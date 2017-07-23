@@ -1,29 +1,39 @@
 #include "header.h"
 #include "config.h"
 
-#define CONFIG_FILE             "/etc/ardubot.conf"
+#define CONFIG_FILE             "/etc/ardubot.conf" /* ardubot configuration file*/
 #define CONF_STRING_LEN         100
-#define DEF_SERVER_IP           "127.0.0.1"
-#define DEF_LISTEN_IP           "127.0.0.1"
-#define DEF_SERVER_PORT         "4000"
-#define DEF_LISTEN_PORT         "4000"
-#define DEF_SERIAL_PORT         "/dev/ttyACM0"
+#define DEF_SERVER_IP           "127.0.0.1" /* ardubot listening ip for webserver to send the keys */
+#define DEF_LISTEN_IP           "127.0.0.1" /* ardubot listening ip */
+#define DEF_SERVER_PORT         "4000" /* ardubot listening port for webserver to send the keys */
+#define DEF_LISTEN_PORT         "4000"  /* ardubot listening port */
+#define DEF_SERIAL_PORT         "/dev/ttyACM0" /* arduino serial port */
 #define MAXLINE                 3000
-#define DEF_WEB_ROOT            "/root/ardubot/web_root/"
-#define DEF_WEB_PORT            "6080"
+#define DEF_WEB_ROOT            "/root/ardubot/web_root/" /* webserver root directory */
+#define DEF_WEB_PORT            "6080" /* port for webserver */
 #define DEF_SER_BAUD_RATE       "115200"
+#define DEF_SMART_ROWS_D        "5" /* distance between rows */
+#define DEF_SMART_COLUMNS_D     "5" /* distance between columns */
+#define DEF_SMART_ROWS_NUM      "5" /* how many rows */
+#define DEF_SMART_COLUMNS_NUM   "20" /* how many columns */
+
 
 
 /* initialise data to default values */
 void init_parameters (struct conf * parms) {
   strncpy (parms->ListenIP, DEF_LISTEN_IP, CONF_STRING_LEN);
-  strncpy (parms->ServerIP, DEF_SERVER_IP, CONF_STRING_LEN);  
+  strncpy (parms->ServerIP, DEF_SERVER_IP, CONF_STRING_LEN);
   strncpy (parms->ListenPort, DEF_LISTEN_PORT, CONF_STRING_LEN);
-  strncpy (parms->ServerPort, DEF_SERVER_PORT, CONF_STRING_LEN);  
+  strncpy (parms->ServerPort, DEF_SERVER_PORT, CONF_STRING_LEN);
   strncpy (parms->SerialPort, DEF_SERIAL_PORT, CONF_STRING_LEN);
   strncpy (parms->WebRoot, DEF_WEB_ROOT, CONF_STRING_LEN);
   strncpy (parms->WebPort, DEF_WEB_PORT, CONF_STRING_LEN);
-  strncpy (parms->SerBaudRate, DEF_SER_BAUD_RATE, CONF_STRING_LEN);  
+  strncpy (parms->SerBaudRate, DEF_SER_BAUD_RATE, CONF_STRING_LEN);
+  strncpy (parms->SmartRowsD, DEF_SMART_ROWS_D, CONF_STRING_LEN);
+  strncpy (parms->SmartColumnsD, DEF_SMART_COLUMNS_D, CONF_STRING_LEN);
+  strncpy (parms->SmartRowsNum, DEF_SMART_ROWS_NUM, CONF_STRING_LEN);
+  strncpy (parms->SmartColumnsNum, DEF_SMART_COLUMNS_NUM, CONF_STRING_LEN);
+
 }
 
 /* trim: get rid of trailing and leading whitespace */
@@ -81,8 +91,16 @@ void parse_config (struct conf * parms) {
       strncpy (parms->WebPort, value, CONF_STRING_LEN);
     else if (strcmp(name, "ServerIP")==0)
       strncpy (parms->ServerIP, value, CONF_STRING_LEN);
-    else if (strcmp(name, "ServerPort")==0)    
-      strncpy (parms->ServerPort, value, CONF_STRING_LEN);        
+    else if (strcmp(name, "ServerPort")==0)
+      strncpy (parms->ServerPort, value, CONF_STRING_LEN);
+    else if (strcmp(name, "ServerPort")==0)
+      strncpy (parms->SmartRowsD, value, CONF_STRING_LEN);
+    else if (strcmp(name, "SmartRowsD")==0)
+      strncpy (parms->SmartColumnsD, value, CONF_STRING_LEN);
+    else if (strcmp(name, "SmartColumnsD")==0)
+      strncpy (parms->SmartRowsNum, value, CONF_STRING_LEN);
+    else if (strcmp(name, "SmartColumnsNum")==0)
+      strncpy (parms->SmartColumnsNum, value, CONF_STRING_LEN);
     else
       syslog (LOG_INFO,"WARNING: %s/%s: Unknown name/value pair!\n", name, value);
   }

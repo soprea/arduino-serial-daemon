@@ -11,7 +11,7 @@ void web_child(int connfd, int fd){
     bzero(buffer,256);
     n = read(connfd,buffer,255);
     if (n < 0){
-        perror("ERROR reading from socket");
+        perror("Webchild: ERROR reading from socket");
         exit(1);
     }
     //printf("Here is the message: %s\n",buffer);
@@ -22,7 +22,7 @@ void web_child(int connfd, int fd){
         fprintf(fp, "Read string: %s", buffer); /* Write output in file */
         fclose(fp);/* Close file */
     if (n < 0){
-        perror("ERROR writing to socket");
+        perror("Webchild: ERROR writing to socket");
         exit(1);
     }
     return;
