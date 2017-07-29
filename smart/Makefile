@@ -1,13 +1,13 @@
+PROG = smart
+
 all:
-	gcc smart.c -o smart -Wall -Wno-unused-function -pthread
+	gcc $(PROG).c ../utils/config.c ../utils/utils.c -o $(PROG) -Wall -Wno-unused-function -pthread
 
 clean:
-	rm -f smart
+	rm -rf *.gc* *.dSYM *.exe *.obj *.o a.out $(PROG)
 
 install:
 	cp ../ardubot.conf /etc/ardubot.conf
 
 uninstall:
 	rm -f /etc/ardubot.conf
-#PROG = webserver
-#include examples.mk

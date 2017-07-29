@@ -18,7 +18,6 @@
 #define DEF_SMART_COLUMNS_NUM   "20" /* how many columns */
 
 
-
 /* initialise data to default values */
 void init_parameters (struct conf * parms) {
   strncpy (parms->ListenIP, DEF_LISTEN_IP, CONF_STRING_LEN);

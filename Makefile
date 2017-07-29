@@ -1,13 +1,13 @@
+PROG = ardubot
+
 all:
-	gcc ardubot.c ardubot-lib.c config.c webchild.c -o ardubot -Wall -Wno-unused-function -pthread
+	gcc $(PROG).c utils/ardubot-lib.c utils/config.c webchild.c utils/utils.c -o $(PROG) -Wall -Wno-unused-function -pthread
 
 clean:
-	rm -f ardubot
+	rm -rf *.gc* *.dSYM *.exe *.obj *.o a.out $(PROG)
 
 install:
 	cp ardubot.conf /etc/ardubot.conf
-	
+
 uninstall:
 	rm -f /etc/ardubot.conf
-#PROG = webserver
-#include examples.mk

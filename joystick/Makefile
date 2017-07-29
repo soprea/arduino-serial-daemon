@@ -1,9 +1,11 @@
+PROG = joya
+
 all:
-	gcc joya.c -o joya -Wall -Wno-unused-function -pthread
+	gcc $(PROG).c -o $(PROG) -Wall -Wno-unused-function -pthread
 
 clean:
-	rm -f joya
+	rm -rf *.gc* *.dSYM *.exe *.obj *.o a.out $(PROG)
 
 install:
-	
+
 uninstall:
