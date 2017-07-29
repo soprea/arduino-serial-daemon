@@ -6,40 +6,10 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <string.h>
+#include "../utils/utils.h"
 
 #include <arpa/inet.h>
-char keypressed[10];
-
-void sendKey(char *keypressed) {
-    int sock; /* Socket descriptor */
-    struct sockaddr_in echoServAddr; /* Echo server address */
-    char *servIP = "127.0.0.1"; /* Server IP address (dotted quad) */
-    int value = 1;
-    int echoServPort = 4000; /* server port */
-
-    /* Create a reliable, stream socket using TCP */
-    sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    /* Construct the server address structure */
-    memset(&echoServAddr, 0, sizeof (echoServAddr)); /* Zero out structure */
-    echoServAddr.sin_family = AF_INET; /* Internet address family */
-    echoServAddr.sin_addr.s_addr = inet_addr(servIP); /* Server IP address */
-    echoServAddr.sin_port = htons(echoServPort); /* Server port */
-
-    /* Establish the connection to the echo server */
-    if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof (echoServAddr)) < 0)
-        exit(0);
-
-    if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *) &value, sizeof (int)) < 0)
-        exit(0);
-
-    /* Give the server a chance */
-    usleep(1000);
-    /* Send this */
-    if (send(sock, keypressed, sizeof (keypressed), 0) != sizeof (keypressed))
-        exit(0);
-    close(sock);
-}
+char keypressed[10]; 
 
 int joy_open(char *device_name) {
     int fd = -1;
@@ -120,7 +90,7 @@ void joy_process(struct js_event jse) {
             if (jse.number == 4) {
                 char *keypressed = "<";
                 sendKey(keypressed);
-            }                
+            }
                 printf("%d : Axis %d @ %0.2f\n", jse.time, jse.number, v);
             }
         }
@@ -145,7 +115,7 @@ void joy_process(struct js_event jse) {
             char *keypressed = "D";
             printf("D was pressed\n");
             sendKey(keypressed);
-        }        
+        }
 
     }
 }

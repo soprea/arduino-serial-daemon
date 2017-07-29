@@ -4,11 +4,12 @@
 
 struct conf parms;
 /* configuration file */
-//static char keypressed[10];
 
 void smart() {
   //Doing the smart moves;
   //Send them with sendKey(keypressed);
+  static char keypressed = 'T';
+  sendKey(keypressed);
 }
 
 int main(void) {
@@ -16,7 +17,8 @@ int main(void) {
   parse_config(&parms);
   daemonize();
   while (1) {
-    /* smart(); */
+    smart();
+    usleep(1000);
   }
   return 0;
 }

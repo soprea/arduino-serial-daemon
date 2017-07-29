@@ -15,35 +15,6 @@ static const char *s_http_port = parms.WebPort;
 static struct mg_serve_http_opts s_http_server_opts;
 static struct device_settings s_settings = {"value1", "value2"};
 
-void sendKey(char *keypressed){
-    int sock;                        /* Socket descriptor */
-    struct sockaddr_in echoServAddr; /* Echo server address */
-    int value = 1;
-
-    /* Create a reliable, stream socket using TCP */
-    sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    /* Construct the server address structure */
-    memset(&echoServAddr, 0, sizeof(echoServAddr));     /* Zero out structure */
-    echoServAddr.sin_family      = AF_INET;             /* Internet address family */
-    echoServAddr.sin_addr.s_addr = inet_addr(parms.ServerIP);   /* Server IP address */
-    echoServAddr.sin_port        = htons(atoi(parms.ServerPort)); /* Server port */
-
-    /* Establish the connection to the echo server */
-    if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
-            exit(0);
-
-    if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *)&value, sizeof(int)) < 0)
-            exit(0);
-
-    /* Give the server a chance */
-    usleep(1000);
-      /* Send this */
-      if (send(sock, keypressed, sizeof(keypressed), 0) != sizeof(keypressed))
-            exit(0);
-    close(sock);
-}
-
 static void handle_save(struct mg_connection *nc, struct http_message *hm) {
   // Get form variables and store settings values
   mg_get_http_var(&hm->body, "setting1", s_settings.setting1,
